@@ -68,6 +68,7 @@ atoms.center(vacuum={vacuum})
 #Ground-state calculation
 calc = GPAW(mode='{mode}',
     xc='{xc}',
+    occupations = {occupations},
     h={h},  # Angstrom
     gpts={gpts},
     kpts={kpts},
@@ -398,7 +399,7 @@ photoabsorption_spectrum('{moment_file}', '{spectrum_file}',folding='{folding}',
         self.write_job_script(self.job_script)
         super().run_job_local(cmd)
 
-    def plot_spectrum(self):
+    def plot(self):
         from litesoph.utilities.plot_spectrum import plot_spectrum
 
         spec_file = self.task_data['spectra_file'][self.pol[0]]
@@ -418,7 +419,8 @@ class GpawCalTCM(Task):
                     'gfilename' : 'gs.gpw',
                     'wfilename' : 'wf.ulm',
                     'frequency_list' : [],
-                    'name' : " "
+                    'name' : " ",
+                    'axis_limit': 10
                     }
 
     tcm_temp = """
@@ -512,8 +514,8 @@ def do(w):
 
     # Plot the decomposition as a TCM
     de = 0.01
-    energy_o = np.arange(-3, 0.1 + 1e-6, de)
-    energy_u = np.arange(-0.1, 3 + 1e-6, de)
+    energy_o = np.arange(-{axis_limit:.2f}, 0.1 + 1e-6, de)
+    energy_u = np.arange(-0.1, {axis_limit:.2f} + 1e-6, de)
     plt.clf()
     plotter = TCMPlotter(ksd, energy_o, energy_u, sigma=0.1)
     plotter.plot_TCM(weight_p)
@@ -564,6 +566,14 @@ run(frequency_list)
         self.write_job_script(self.job_script)
         super().run_job_local(cmd)
 
+    def plot(self):
+        from PIL import Image
+       
+        for item in self.user_input.get('frequency_list'):
+            img_file = Path(self.project_dir) / 'gpaw' / 'TCM' / f'tcm_{item:.2f}.png'
+            
+            image = Image.open(img_file)
+            image.show()
 
 class GpawLrTddft:
     """This class contains the template  for creating gpaw 

@@ -30,7 +30,7 @@ def check_and_create(path):
 
 #### Function to read in the input parameter file ####
 
-def read_input(lines):
+def read_input(lines,prpath):
 
         nocc = 10
         nunocc = 10
@@ -43,7 +43,7 @@ def read_input(lines):
         # tdos = False
         tehr = False
         axis = [0, 0, 1]
-        evfile = ""
+        evfile = "static/info"
         ni = 5
         na = 5
         evals = []
@@ -158,57 +158,64 @@ def read_input(lines):
                         hlmin = float(arr[0]) #Lowest hole energy to consider
                         elmax = float(arr[1]) #Highest electron energy to consider
                         tehr = True
-        # print(evfile)
-        # fn = open(evfile,"r")
-        # recs = fn.readlines()
-        # ctr = 0
-        # for line in recs:
-        #         if re.search("occupation",line,re.I):
-        #                 ctrbeg = ctr
-        #                 break
-        #         ctr += 1
+        evfile = prpath / evfile
+        print(evfile)
+        fn = open(evfile,"r")
+        recs = fn.readlines()
+        ctr = 0
+        for line in recs:
+                if re.search("occupation",line,re.I):
+                        ctrbeg = ctr
+                        break
+                ctr += 1
 
-        # ist = 0
-        # for line in recs[ctrbeg+1:]:
-        #         if ist == (nocc+nunocc):
-        #                 break
-        #         evals.append(float(line.strip().split()[2]))
-        #         ist += 1
+        ist = 0
+        for line in recs[ctrbeg+1:]:
+                if ist == (nocc+nunocc):
+                        break
+                evals.append(float(line.strip().split()[2]))
+                ist += 1
 
-        # if tehr:
-        #         ni = 0
-        #         na = 0
-        #         ehomo = evals[nocc-1]
-        #         # print(ehomo, hlmin)
-        #         for en in evals:
-        #                 #ediff = en-ehomo
-        #                 if en <= ehomo and en >= hlmin:
-        #                         ni += 1
-        #                 elif en > ehomo and en <= hlmin:
-        #                         na += 1
+        if tehr:
+                ni = 0
+                na = 0
+                ehomo = evals[nocc-1]
+                # print(ehomo, hlmin)
+                for en in evals:
+                        #ediff = en-ehomo
+                        if en <= ehomo and en >= hlmin:
+                                ni += 1
+                        elif en > ehomo and en <= hlmin:
+                                na += 1
 
-        #         ni = min([ni,nocc])
-        #         na = min([na,nunocc])
-                # print(ni, na)
+                ni = min([ni,nocc])
+                na = min([na,nunocc])
+               # print(ni, na)
 
         return (nocc, nunocc, nt, nbeg, nskp, axis, ni, na, tpop, tdos, ef, emin, emax, ne, esig, dosdir, tdmat, nproj, iproj, evals)
 
 ### Main code begins ####
 fname=sys.argv[1]
-info_file = sys.argv[2]
-projection_file = sys.argv[3]
+input_file = pathlib.Path(fname).absolute()
+ksd_folder_path = input_file.parents[0]
+project_folder_path = input_file.parents[1]
 
-input_file = pathlib.Path(fname)
-ksd_folder_path = input_file.parent
 # print(ksd_folder_path)
+# try:
+#    projection_file ="td.general/"+sys.argv[2]
+# except:
+#    projection_file ="td.general/projections"
 
+# projection_file = project_folder_path / projection_file
+
+projection_file = sys.argv[3]
 ################################################################################################
 # Reads ksd input file
 
 fp=open(fname,"r")
 lines=fp.readlines()
 fp.close()
-(nocc, nunocc, nt, nbeg, nskp, axis, nhole, npart, tpop, tdos, ef, emin, emax, ne, esig, dosdir, tdmat, nproj, iproj, ener) = read_input(lines)
+(nocc, nunocc, nt, nbeg, nskp, axis, nhole, npart, tpop, tdos, ef, emin, emax, ne, esig, dosdir, tdmat, nproj, iproj, ener) = read_input(lines,project_folder_path)
 # print(nocc, nunocc, nt, nbeg, nskp, axis, nhole, npart, tpop, tdos, ef, emin, emax, ne, esig, dosdir, tdmat, nproj, iproj, ener)
 
 ##### Instantiate an object of the Projections class
@@ -223,27 +230,6 @@ fp.close()
 print("Projections extracted from file!")
 print("Kick is :", kick)
 print("Time step is :", delt)
-
-###################################################################################################
-# Reads static/info file to store energy eigen values
-
-fp = open(info_file, "r")
-lines = fp.readlines()
-ctr = 0
-for line in lines:
-        if re.search("occupation",line,re.I):
-                ctrbeg = ctr
-                break
-        ctr += 1
-
-ist = 0
-evals = []
-for line in lines[ctrbeg+1:]:
-        if ist == (nocc+nunocc):
-                break
-        evals.append(float(line.strip().split()[2]))
-        ist += 1
-
 
 #### Compute the TD populations of the initial KS states
 if tpop:
@@ -289,18 +275,16 @@ if tdmat:
         enuocc = []
        
         for ix in stocc:
-                enocc.append(evals[ix])
-                # enocc.append(ener[ix])
+                enocc.append(ener[ix])
        
         for ix in stunocc:
-                enuocc.append(evals[ix])
-                # enuocc.append(ener[ix])
+                enuocc.append(ener[ix])
 
-        dmat_path = pathlib.Path(ksd_folder_path) / "dmat.dat"
-        dmatw_path = pathlib.Path(ksd_folder_path) / "dmatw.dat" 
-        strength_path = pathlib.Path(ksd_folder_path) / "strength.dat"
-        transwt_path = pathlib.Path(ksd_folder_path) / "transwt.dat"
-        spectrum_prop_path = pathlib.Path(ksd_folder_path) / "spectrum_prop.dat"
+        dmat_path = ksd_folder_path / "dmat.dat"
+        dmatw_path = ksd_folder_path / "dmatw.dat" 
+        strength_path = ksd_folder_path / "strength.dat"
+        transwt_path = ksd_folder_path / "transwt.dat"
+        spectrum_prop_path = ksd_folder_path / "spectrum_prop.dat"
        
         # fp=open("dmat.dat","w")	
         fp=open(dmat_path,"w")	
@@ -318,18 +302,19 @@ if tdmat:
        
         # fp=open("strength.dat","w")
         fp=open(strength_path,"w")
-        TDsystem.write_dmat(nus,strengthKS,enocc,enuocc,fp)
+        TDsystem.write_dmatr(nus,strengthKS,enocc,enuocc,fp)
         fp.close()
        
         # fp=open("transwt.dat","w")
         fp=open(transwt_path,"w")
-        TDsystem.write_dmat(nus,transwt,enocc,enuocc,fp)
+        TDsystem.write_dmatr(nus,transwt,enocc,enuocc,fp)
         fp.close()
        
 #######  Plot the particle-hole resolved strength function 
         # fp=open("spectrum_prop.dat","w")
         fp=open(spectrum_prop_path,"w")
-        for iw in range(nt):
-             fp.write("%10.6f %10.6f \n" %(nus[iw],strength[iw]))
+        nuspos = np.where(nus >=0)[0]
+        for iw in range(nuspos.size):
+             fp.write("%10.6f %10.6f \n" %(nuspos[iw],strength[iw]))
         fp.close()
 

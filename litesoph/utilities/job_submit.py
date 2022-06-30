@@ -8,7 +8,6 @@ import subprocess
 import re
 from scp import SCPClient
 from litesoph.simulations.esmd import Task
-from litesoph.config import get_mpi_command
 import pexpect
 
 
@@ -18,6 +17,39 @@ def get_submit_class(network=None, **kwargs):
         return SubmitNetwork(**kwargs)
     else:
         return SubmitLocal(**kwargs)
+
+def execute(command, directory):
+    
+    result = {}
+    
+    if type(command).__name__ == 'str':
+        command = [command]
+
+    for cmd in command:
+        out_dict = result[cmd] = {}
+        print("Job started with command:", cmd)
+        try:
+            job = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd= directory, shell=True)
+            output = job.communicate()
+        except Exception as e:
+            raise Exception(e)
+        else:
+            print("returncode =", job.returncode)
+    
+            if job.returncode != 0:
+                print("Error...")
+                for line in output[1].decode(encoding='utf-8').split('\n'):
+                    print(line)
+            else:
+                print("job done..")
+                if output[0]:
+                    print("Output...")
+                    for line in output[0].decode(encoding='utf-8').split('\n'):
+                        print(line)
+            out_dict['returncode'] = job.returncode
+            out_dict['output'] = output[0]
+            out_dict['error'] = output[1]
+    return result
     
 class SubmitLocal:
 
@@ -28,14 +60,7 @@ class SubmitLocal:
         self.np = nprocessors
         self.command = None
         task.create_job_script(self.np)
-        # if self.np > 1:
-        #     mpi = get_mpi_command(self.engine.NAME, self.task.lsconfig)
-        #     self.command = mpi + ' ' + '-np' + ' ' + str(self.np)
                    
-    def create_command(self):
-        """creates  the command to run the job"""
-        self.command = self.task.create_local_cmd(self.command)
-        
 
     def prepare_input(self):
         """this adds in the proper path to the data file required for the job"""
@@ -54,43 +79,9 @@ class SubmitLocal:
         print('done preparing')
 
     def run_job(self, cmd):    
-        #self.create_command()
-        result = self.execute(cmd, self.project_dir)
+        result = execute(cmd, self.project_dir)
         self.task.local_cmd_out = (result[cmd]['returncode'], result[cmd]['output'], result[cmd]['error'])
         print(result)
-        
-    def execute(self, command, directory):
-        
-        result = {}
-        
-        if type(command).__name__ == 'str':
-            command = [command]
-
-        for cmd in command:
-            out_dict = result[cmd] = {}
-            print("Job started with command:", cmd)
-            try:
-                job = subprocess.Popen(cmd, stdout=subprocess.PIPE, stderr=subprocess.PIPE, cwd= directory, shell=True)
-                output = job.communicate()
-            except Exception as e:
-                raise Exception(e)
-            else:
-                print("returncode =", job.returncode)
-        
-                if job.returncode != 0:
-                    print("Error...")
-                    for line in output[1].decode(encoding='utf-8').split('\n'):
-                        print(line)
-                else:
-                    print("job done..")
-                    if output[0]:
-                        print("Output...")
-                        for line in output[0].decode(encoding='utf-8').split('\n'):
-                            print(line)
-                out_dict['returncode'] = job.returncode
-                out_dict['output'] = output[0]
-                out_dict['error'] = output[1]
-        return result
 
 class SubmitNetwork:
 
