@@ -875,6 +875,52 @@ class TimeDependentPage(View1):
         self.label_msg['font'] = myFont
         self.label_msg.grid(row=0, column=4)
 
+    def show_td_page(self):
+        """ Updates engine defaults and shows td page"""
+
+        # self.engine.trace_add('write', self._on_engine_default)
+        self.td_dict = self._on_engine_default()
+        self._var = define_tk_var(self.td_dict) 
+        self.create_widgets()   
+
+    def _on_engine_default(self):
+        """ Returns updated model dictionary"""
+
+        from litesoph.simulations.models import OctopusModel, GpawModel, NWchemModel
+        engine_name = self.engine_var.get()
+
+        def update_oct_td(_dict:dict):
+            gs_spacing = self.status.get_status('octopus.ground_state.param.spacing')
+            dt_max = calc_td_range(gs_spacing)
+            _dict['dt']['max'] = dt_max 
+            _dict['dt']['default_value'] = dt_max/2
+
+            return _dict
+
+        def default_func(_dict:dict):
+            return _dict
+
+        engine_models = {'gpaw':GpawModel,
+                        'octopus': OctopusModel,
+                        'nwchem': NWchemModel}
+
+        update_models = {'octopus': update_oct_td}                
+
+        def calc_td_range(spacing:float):
+            """ calculates max limit for time step specific to Octopus engine"""
+
+            from litesoph.utilities.units import ang_to_au, au_to_as
+            # gs_spacing = self.status.get_status('octopus.ground_state.param.spacing')     # in angstrom
+            h = spacing*ang_to_au
+            dt = 0.0426-0.207*h+0.808*h*h
+            dt = round(dt*au_to_as, 2)
+            return dt  
+                
+        model = engine_models.get(engine_name) 
+        model_dict = model.td_delta 
+        updated_dict = update_models.get(engine_name, default_func)(model_dict) 
+        return updated_dict
+        
     def get_pol_list(self): 
         if self._var['pol_var'].get() == 0:
             pol_list = [1,0,0]         
