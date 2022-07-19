@@ -142,6 +142,18 @@ class GpawModel:
             'eigenstate': {'type': DT.decimal , 'min': None, 'max': None, 'default_value': 4e-8}
         }
 
+    td_delta = {
+        'strength': {'type':DT.decimal, 'min': None, 'max': None,'values':["1e-5", "1e-4", "1e-3"], 'default_value': 1e-5},
+        'pol_var'  : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'dt'   : {'type':DT.decimal, 'min': None, 'max': 10e1000, 'default_value': 10},
+        'Nt'   : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 2000},
+        'spectra' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 1},
+        'avg_spectra' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'ksd' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'popln' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'output_freq' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0}
+    }     
+
 @dataclass
 class NWchemModel:
     
@@ -157,6 +169,18 @@ class NWchemModel:
             #'tolerances' : ['str','tight'],
             'gradient' :  {'type':DT.decimal, 'min': None, 'max': None, 'default_value':1.0e-4}
         }
+
+    td_delta = {
+        'strength': {'type':DT.decimal, 'min': None, 'max': None,'values':["1e-5", "1e-4", "1e-3"], 'default_value': 1e-5},
+        'pol_var'  : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'dt'   : {'type':DT.decimal, 'min': None, 'max': 10e1000, 'default_value': 2.4},
+        'Nt'   : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 2000},
+        'spectra' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 1},
+        'avg_spectra' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 1},
+        'ksd' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'popln' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'output_freq' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 1}
+    }     
 
 @dataclass
 class OctopusModel:
@@ -197,6 +221,18 @@ class OctopusModel:
             'rlteigen'   : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0},
             'extra_states' : {'type':DT.integer,'min': None, 'max': None, 'default_value': 0}
         }
+
+    td_delta = {
+        'strength': {'type':DT.decimal, 'min': None, 'max': None,'values':["1e-5", "1e-4", "1e-3"], 'default_value': 1e-5},
+        'pol_var'  : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'dt'   : {'type':DT.decimal, 'min': None, 'max': 10, 'default_value': 1},
+        'Nt'   : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 2000},
+        'spectra' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 1},
+        'avg_spectra' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 1},
+        'ksd' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'popln' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 0},
+        'output_freq' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 50}
+    }     
     
 
 class LaserDesignModel:
