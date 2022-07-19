@@ -441,10 +441,14 @@ class GUIAPP:
             messagebox.showinfo(title= "Info", message=check[1])
             return
         self._show_frame(v.TimeDependentPage, self.engine)
+        
         self.rt_tddft_delta_view = self._frames[v.TimeDependentPage]
+        self.rt_tddft_delta_view.status = self.status
+        self.rt_tddft_delta_view.engine_var.set(self.engine)
+        self.rt_tddft_delta_view.show_td_page()
         self.rt_tddft_delta_view.add_job_frame('RT_TDDFT_DELTA')
         self.rt_tddft_delta_view.set_sub_button_state('disabled')
-        self.rt_tddft_delta_view.update_engine_default(self.engine) 
+        # self.rt_tddft_delta_view.update_engine_default(self.engine) 
 
         self.main_window.bind_all('<<SaveRT_TDDFT_DELTAScript>>', lambda _ : self._on_td_save_button())
         self.main_window.bind_all('<<GenerateRT_TDDFT_DELTAScript>>', lambda _ : self._generate_td_input())
@@ -465,7 +469,7 @@ class GUIAPP:
         self.rt_tddft_delta_task = get_engine_task(self.engine, 'rt_tddft_delta', self.status, self.directory, self.lsconfig, inp_dict)
         self.rt_tddft_delta_task.create_template()
         self.view_panel.insert_text(text=self.rt_tddft_delta_task.template, state='normal')
-        self.rt_tddft_delta_view.set_label_msg('saved')
+        # self.rt_tddft_delta_view.set_label_msg('saved')
 
     def _on_td_run_local_button(self, *_):
 
