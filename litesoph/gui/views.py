@@ -687,6 +687,10 @@ class TimeDependentPage(View1):
         self.parent = parent
         self.engine = engine
         self.job = None
+        self.engine_var = tk.StringVar(value=engine)
+        
+    def create_widgets(self):
+        """ Creates widgets for td page"""
 
         myFont = font.Font(family='Helvetica', size=10, weight='bold')
           
@@ -734,9 +738,8 @@ class TimeDependentPage(View1):
 
         inval = ["1e-5", "1e-4", "1e-3"]
         self.entry_inv = ttk.Combobox(
-            self.Frame1, textvariable=self._var['strength'], value=inval)
+            self.Frame1, textvariable=self._var['strength'], value=self.td_dict['strength']['values'])
         self.entry_inv['font'] = myFont
-        # self.entry_inv.place(x=280,y=60)
         self.entry_inv.grid(row=2, column=1)
         self.entry_inv['state'] = 'readonly'
 
@@ -745,8 +748,8 @@ class TimeDependentPage(View1):
         self.label_proj['font'] = myFont
         self.label_proj.grid(row=3, column=0, sticky='w', padx=2, pady=4)
 
-        #self.entry_proj = tk.Entry(self.Frame1,textvariable= self._var['dt'])
-        self.entry_dt = Decimalentry(self.Frame1, textvariable=self._var['dt'])
+        # self.entry_dt = Decimalentry(self.Frame1, textvariable=self._var['dt'], max = self.dt_max)
+        self.entry_dt = Decimalentry(self.Frame1, textvariable=self._var['dt'], max = self.td_dict['dt']['max'])
         self.entry_dt['font'] = myFont
         self.entry_dt.grid(row=3, column=1, ipadx=2, ipady=2)
 
