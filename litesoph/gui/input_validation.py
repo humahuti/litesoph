@@ -48,6 +48,7 @@ class Validatedconv(ttk.Entry):
  
 class Decimalentry(ttk.Entry):
   def __init__(self, *args, **kwargs):
+    self.min = kwargs.get("min", 0.001)
     self.max = kwargs.pop("max", 100)
     super().__init__(*args, **kwargs)
     
@@ -55,11 +56,27 @@ class Decimalentry(ttk.Entry):
         validate='all',
         validatecommand=(self.register(self.validate), '%P'),
         )
+
   def validate(self, inp):
+    from decimal import Decimal, InvalidOperation
+    valid = True
     try:
-        return True if inp == '' else float(inp) <= self.max 
-    except:
-        return False
+      d_value = Decimal(inp)
+    except InvalidOperation:
+      return False
+
+    # d_value = inp
+
+    if (d_value) < self.min:
+      valid = False
+    if (d_value) > self.max:
+      valid = False
+
+    return valid
+    # try:
+    #   return True if inp == '' else float(inp) <= self.max 
+    # except:
+    #   return False
 
 class Fourchar(ttk.Entry):
     def __init__(self, parent, *args, **kwargs):
