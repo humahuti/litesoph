@@ -177,24 +177,24 @@ class OctopusModel:
             'shape' :{'type':DT.string, 'values':["parallelepiped","minimum", "sphere", "cylinder"], 'default_value':'parallelepiped'},
             'spinpol' :{'type':DT.string, 'values':['unpolarized', 'polarized'], 'default_value':'unpolarized'},
             'multip' : {'type':DT.integer, 'min': None, 'max': None, 'default_value': 1},
-            'h' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0.3},
-            'energy' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 5.0e-7},
-            'density' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 1e-6},
+            'h' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0.3},            
             'lx' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 12},
             'ly' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 12},
             'lz' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 12},
             'r' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 6},
             'l' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 12},
             'dxc' : {'type':DT.integer,'min': None, 'max': None, 'default_value': 3},
-            'mix' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0.3},
+            'mixing' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0.3},
             'eigen' : {'type':DT.string, 'values':["rmmdiis","plan","cg","cg_new"], 'default_value':'rmmdiis'},
             'smear' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0.1},
             'smearfn' : {'type':DT.string, 'values':["semiconducting","fermi_dirac","cold_smearing","methfessel_paxton","spline_smearing"], 'default_value':'semiconducting'},
             'unitconv' : {'type':DT.string, 'values':[], 'default_value':''},
-            'unit_box' : {'type':DT.string, 'values':['angstrom', 'au'], 'default_value':'angstrom'},
-            'absdensity': {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0},
-            'abseigen'  : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0},
-            'rlteigen'   : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0},
+            'unit_box' : {'type':DT.string, 'values':['angstrom'], 'default_value':'angstrom'},
+            'conv_energy' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 5.0e-7},
+            'abs_density' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 1e-6},
+            'abs_eigen' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0},
+            'rel_density' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0},
+            'rel_eigen' : {'type':DT.decimal, 'min': None, 'max': None, 'default_value': 0},
             'extra_states' : {'type':DT.integer,'min': None, 'max': None, 'default_value': 0}
         }
     
@@ -260,10 +260,13 @@ class LaserDesignModel:
 
 def plot(x_data, y_data, x_label, y_label):
     """ returns Figure object given x and y data """
-    from matplotlib.figure import Figure  
-    figure = Figure(figsize=(5, 3), dpi=100)  
-      
-    ax = figure.add_subplot(1, 1, 1)
+    from matplotlib.figure import Figure
+    import matplotlib.pyplot as plt
+
+    plt.figure(figsize=(8, 6), dpi=100)  
+    # figure = Figure(figsize=(5, 3), dpi=100)  
+    ax = plt.subplot(1, 1, 1)  
+    # ax = figure.add_subplot(1, 1, 1)
     ax.plot(x_data, y_data, 'k')
     ax.spines['right'].set_visible(False)
     ax.spines['top'].set_visible(False)
@@ -271,8 +274,10 @@ def plot(x_data, y_data, x_label, y_label):
     ax.xaxis.set_ticks_position('bottom')
     ax.set_xlabel(x_label)
     ax.set_ylabel(y_label)
+
+    plt.show()
  
-    return figure    
+    # return figure    
 
 
 class TextViewerModel:

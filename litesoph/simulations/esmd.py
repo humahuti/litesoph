@@ -1,8 +1,16 @@
 from configparser import ConfigParser
 import pathlib
 import re
+import os
 
 from litesoph.simulations.engine import EngineStrategy,EngineGpaw,EngineNwchem,EngineOctopus
+
+GROUND_STATE = 'ground_state'
+RT_TDDFT_DELTA = 'rt_tddft_delta'
+RT_TDDFT_LASER = 'rt_tddft_laser'
+SPECTRUM = 'spectrum'
+TCM = 'tcm'
+MO_POPULATION_CORRELATION = 'mo_population_correlation'
 
 def get_engine_obj(engine, *args, **kwargs)-> EngineStrategy:
     """ It takes engine name and returns coresponding EngineStrategy class"""
@@ -13,6 +21,53 @@ def get_engine_obj(engine, *args, **kwargs)-> EngineStrategy:
         return  EngineOctopus(*args, **kwargs)
     elif engine == 'nwchem':
         return EngineNwchem(*args, **kwargs)
+
+class TaskError(RuntimeError):
+    """Base class of error types related to any TASK."""
+
+
+class TaskSetupError(TaskError):
+    """Calculation cannot be performed with the given parameters.
+
+    Typically raised before a calculation."""
+
+
+
+class InputError(TaskSetupError):
+    """Raised if inputs given to the calculator were incorrect.
+
+    Bad input keywords or values, or missing pseudopotentials.
+
+    This may be raised before or during calculation, depending on
+    when the problem is detected."""
+
+
+class TaskFailed(TaskError):
+    """Calculation failed unexpectedly.
+
+    Reasons to raise this error are:
+      * Calculation did not converge
+      * Calculation ran out of memory
+      * Segmentation fault or other abnormal termination
+      * Arithmetic trouble (singular matrices, NaN, ...)
+
+    Typically raised during calculation."""
+
+
+class ReadError(TaskError):
+    """Unexpected irrecoverable error while reading calculation results."""
+
+
+class TaskNotImplementedError(NotImplementedError):
+    """Raised if a calculator does not implement the requested property."""
+
+
+class PropertyNotPresent(TaskError):
+    """Requested property is missing.
+
+    Maybe it was never calculated, or for some reason was not extracted
+    with the rest of the results, without being a fatal ReadError."""
+
 
 class Task:
 
@@ -42,6 +97,8 @@ class Task:
         self.prepend_project_name()
 
     def prepend_project_name(self):
+        
+        # Remove this method, and use add_proper_path method for inserting proper path into file.
 
         self.filename = pathlib.Path(f"{self.project_dir.name}/{self.task_data['inp']}")
         for item in self.task_data['req']:
@@ -54,7 +111,13 @@ class Task:
         
     def create_template(self):
         ...
-       
+    
+    @staticmethod
+    def create_directory(directory):
+        absdir = os.path.abspath(directory)
+        if absdir != pathlib.Path.cwd and not pathlib.Path.is_dir(directory):
+            os.makedirs(directory)
+
     def write_input(self, template=None):
         
         if template:
@@ -108,14 +171,12 @@ class Task:
     def create_task_dir(self):
         self.task_dir = self.engine.create_dir(self.project_dir, type(self).__name__)
 
-    def replacetext(filename, search_text,replace_text):
-
-        with open(filename,'r+') as f:
-            file = f.read()
-            file = re.sub(search_text, replace_text, file)
-            f.seek(0)
-            f.write(file)
-            f.truncate()
+    def add_proper_path(self, path):
+        """this adds in the proper path to the data file required for the job"""
+        
+        if str(self.project_dir.parent) in self.template:
+            text = re.sub(str(self.project_dir.parent), str(path), self.template)
+        self.write_input(text)
 
     def set_submit_local(self, *args):
         from litesoph.utilities.job_submit import SubmitLocal
@@ -123,7 +184,7 @@ class Task:
 
     def run_job_local(self,cmd):
         cmd = cmd + ' ' + self.BASH_filename
-        self.sumbit_local.prepare_input()
+        self.sumbit_local.add_proper_path()
         self.sumbit_local.run_job(cmd)
         
 def pbs_job_script(name):
